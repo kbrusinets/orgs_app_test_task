@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: chatapp-postgres
+    ports:
+      - 6432:5432
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=user
+      - POSTGRES_DB=orgs_app
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=pass psql -U user -d orgs_app -c 'SELECT 1'"]
+      interval: 10s
+      timeout: 2s
+      retries: 30
+
+  backend:
+    build: .
+    image: myapp:latest
+    container_name: backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    ports:
+      - "8000:8000"
+
+  alembic:
+    image: myapp:latest
+    container_name: alembic-migration
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
