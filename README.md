@@ -7,7 +7,7 @@
 1. Clone the repository
 2. Ensure required ports are available
 3. Run `docker-compose up -d` and wait for all services to start
-4. Access the application - http://127.0.0.1:8080
+4. Access the application - http://127.0.0.1:8080/docs
 5. You can check the prepared db data in the alembic migration file
 
 ## 📊 Recommended checks 
