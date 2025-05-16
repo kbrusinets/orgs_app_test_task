@@ -14,7 +14,7 @@
 - 216750ea-fd07-463f-b307-07b7dc9e6a74
 - c7544f15-6eb9-4b68-8e63-7022037c752b
 
-## 📊 Recommended checks 
+## 📊 Recommended checks
 - Search by coords - http://127.0.0.1:8000/api/v1/org/coords?lon=37.6102&lat=55.7616&api_key=216750ea-fd07-463f-b307-07b7dc9e6a74
 - Search by id - http://127.0.0.1:8000/api/v1/org/id?org_id=2&api_key=216750ea-fd07-463f-b307-07b7dc9e6a74
 - Search by category (with tree) - http://127.0.0.1:8000/api/v1/org/category?cat_id=1&api_key=216750ea-fd07-463f-b307-07b7dc9e6a74

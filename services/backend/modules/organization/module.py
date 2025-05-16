@@ -1,16 +1,16 @@
 from typing import List, Union
 
+from geoalchemy2 import Geography, Geometry
+from geoalchemy2 import functions as geo_func
 from geoalchemy2.shape import from_shape, to_shape
-from geoalchemy2 import functions as geo_func, Geography, Geometry
 from shapely.geometry import Point
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from services.backend.modules.base import ModuleWithDb
 from services.backend.modules.category.schemas import CategoryFull
-
 from services.backend.modules.organization.schemas import OrgFull
-from services.db.models import Organization, Address, Category
+from services.db.models import Address, Category, Organization
 
 
 class OrganizationModule(ModuleWithDb):
@@ -19,11 +19,9 @@ class OrganizationModule(ModuleWithDb):
             select(Organization)
             .options(
                 selectinload(Organization.address),
-                selectinload(Organization.categories)
+                selectinload(Organization.categories),
             )
-            .where(
-                Organization.id == org_id
-            )
+            .where(Organization.id == org_id)
         )
         async with self.db.session_scope() as sess:
             org = await sess.execute(query)
@@ -33,31 +31,26 @@ class OrganizationModule(ModuleWithDb):
                 result = OrgFull(
                     id=org.id,
                     name=org.name,
-                    coordinates=f'{org_coords.y}, {org_coords.x}',
-                    address=f'{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}',
+                    coordinates=f"{org_coords.y}, {org_coords.x}",
+                    address=f"{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}",
                     categories=[
-                        CategoryFull(
-                            id=cat.id,
-                            parent_id=cat.parent_id,
-                            name=cat.name
-                        ) for cat in org.categories
-                    ]
+                        CategoryFull(id=cat.id, parent_id=cat.parent_id, name=cat.name)
+                        for cat in org.categories
+                    ],
                 )
             else:
                 result = None
         return result
 
-    async def get_by_coords(self,
-                            lon: float,
-                            lat: float) -> List[OrgFull]:
+    async def get_by_coords(self, lon: float, lat: float) -> List[OrgFull]:
         query = (
             select(Address)
             .options(
-                selectinload(Address.organizations).selectinload(Organization.categories)
+                selectinload(Address.organizations).selectinload(
+                    Organization.categories
+                )
             )
-            .where(
-                Address.coordinates == from_shape(Point(lon, lat), srid=4326)
-            )
+            .where(Address.coordinates == from_shape(Point(lon, lat), srid=4326))
         )
         result = []
         async with self.db.session_scope() as sess:
@@ -70,15 +63,14 @@ class OrganizationModule(ModuleWithDb):
                     OrgFull(
                         id=organization.id,
                         name=organization.name,
-                        coordinates=f'{org_coords.y}, {org_coords.x}',
-                        address=f'{address.country}, {address.city}, {address.street}, {address.home}',
+                        coordinates=f"{org_coords.y}, {org_coords.x}",
+                        address=f"{address.country}, {address.city}, {address.street}, {address.home}",
                         categories=[
                             CategoryFull(
-                                id=cat.id,
-                                parent_id=cat.parent_id,
-                                name=cat.name
-                            ) for cat in organization.categories
-                        ]
+                                id=cat.id, parent_id=cat.parent_id, name=cat.name
+                            )
+                            for cat in organization.categories
+                        ],
                     )
                 )
             sess.expunge_all()
@@ -88,12 +80,12 @@ class OrganizationModule(ModuleWithDb):
         query = (
             select(Category)
             .options(
-                selectinload(Category.organizations).selectinload(Organization.categories),
-                selectinload(Category.organizations).selectinload(Organization.address)
+                selectinload(Category.organizations).selectinload(
+                    Organization.categories
+                ),
+                selectinload(Category.organizations).selectinload(Organization.address),
             )
-            .where(
-                Category.id.in_(cat_ids)
-            )
+            .where(Category.id.in_(cat_ids))
         )
         result = []
         result_ids = set()
@@ -108,15 +100,16 @@ class OrganizationModule(ModuleWithDb):
                             OrgFull(
                                 id=org.id,
                                 name=org.name,
-                                coordinates=f'{org_coords.y}, {org_coords.x}',
-                                address=f'{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}',
+                                coordinates=f"{org_coords.y}, {org_coords.x}",
+                                address=f"{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}",
                                 categories=[
                                     CategoryFull(
                                         id=cat.id,
                                         parent_id=cat.parent_id,
-                                        name=cat.name
-                                    ) for cat in org.categories
-                                ]
+                                        name=cat.name,
+                                    )
+                                    for cat in org.categories
+                                ],
                             )
                         )
                         result_ids.add(org.id)
@@ -128,11 +121,9 @@ class OrganizationModule(ModuleWithDb):
             select(Organization)
             .options(
                 selectinload(Organization.categories),
-                selectinload(Organization.address)
+                selectinload(Organization.address),
             )
-            .where(
-                Organization.name.ilike(name)
-            )
+            .where(Organization.name.ilike(name))
         )
         result = []
         result_ids = set()
@@ -146,15 +137,14 @@ class OrganizationModule(ModuleWithDb):
                         OrgFull(
                             id=org.id,
                             name=org.name,
-                            coordinates=f'{org_coords.y}, {org_coords.x}',
-                            address=f'{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}',
+                            coordinates=f"{org_coords.y}, {org_coords.x}",
+                            address=f"{org.address.country}, {org.address.city}, {org.address.street}, {org.address.home}",
                             categories=[
                                 CategoryFull(
-                                    id=cat.id,
-                                    parent_id=cat.parent_id,
-                                    name=cat.name
-                                ) for cat in org.categories
-                            ]
+                                    id=cat.id, parent_id=cat.parent_id, name=cat.name
+                                )
+                                for cat in org.categories
+                            ],
                         )
                     )
                     result_ids.add(org.id)
@@ -165,13 +155,15 @@ class OrganizationModule(ModuleWithDb):
         query = (
             select(Address)
             .options(
-                selectinload(Address.organizations).selectinload(Organization.categories)
+                selectinload(Address.organizations).selectinload(
+                    Organization.categories
+                )
             )
             .where(
                 geo_func.ST_DWithin(
                     Address.coordinates,
                     geo_func.ST_SetSRID(geo_func.ST_Point(lon, lat), 4326),
-                    radius_meters
+                    radius_meters,
                 )
             )
         )
@@ -188,15 +180,16 @@ class OrganizationModule(ModuleWithDb):
                             OrgFull(
                                 id=org.id,
                                 name=org.name,
-                                coordinates=f'{org_coords.y}, {org_coords.x}',
-                                address=f'{addr.country}, {addr.city}, {addr.street}, {addr.home}',
+                                coordinates=f"{org_coords.y}, {org_coords.x}",
+                                address=f"{addr.country}, {addr.city}, {addr.street}, {addr.home}",
                                 categories=[
                                     CategoryFull(
                                         id=cat.id,
                                         parent_id=cat.parent_id,
-                                        name=cat.name
-                                    ) for cat in org.categories
-                                ]
+                                        name=cat.name,
+                                    )
+                                    for cat in org.categories
+                                ],
                             )
                         )
                         result_ids.add(org.id)
@@ -204,17 +197,23 @@ class OrganizationModule(ModuleWithDb):
 
     async def get_by_area(self, lon: float, lat: float, height: int, width: int):
         center = select(
-            geo_func.ST_SetSRID(geo_func.ST_MakePoint(lon, lat), 4326).cast(Geography).label("geom")
+            geo_func.ST_SetSRID(geo_func.ST_MakePoint(lon, lat), 4326)
+            .cast(Geography)
+            .label("geom")
         ).cte("center")
 
         ns = select(
-            geo_func.ST_Project(center.c.geom, height / 2, func.radians(0)).label("north"),
-            geo_func.ST_Project(center.c.geom, height / 2, func.radians(180)).label("south")
+            geo_func.ST_Project(center.c.geom, height / 2, func.radians(0)).label(
+                "north"
+            ),
+            geo_func.ST_Project(center.c.geom, height / 2, func.radians(180)).label(
+                "south"
+            ),
         ).cte("ns")
 
         corners = select(
             geo_func.ST_Project(ns.c.north, width / 2, func.radians(90)).label("ne"),
-            geo_func.ST_Project(ns.c.south, width / 2, func.radians(270)).label("sw")
+            geo_func.ST_Project(ns.c.south, width / 2, func.radians(270)).label("sw"),
         ).cte("corners")
 
         rectangle = select(
@@ -223,17 +222,21 @@ class OrganizationModule(ModuleWithDb):
                 geo_func.ST_Y(func.cast(corners.c.sw, Geometry)),
                 geo_func.ST_X(func.cast(corners.c.ne, Geometry)),
                 geo_func.ST_Y(func.cast(corners.c.ne, Geometry)),
-                4326
+                4326,
             ).label("rect")
         ).cte("rectangle")
 
         query = (
             select(Address)
             .options(
-                selectinload(Address.organizations).selectinload(Organization.categories)
+                selectinload(Address.organizations).selectinload(
+                    Organization.categories
+                )
             )
             .where(
-                geo_func.ST_Intersects(Address.coordinates, func.cast(rectangle.c.rect, Geography))
+                geo_func.ST_Intersects(
+                    Address.coordinates, func.cast(rectangle.c.rect, Geography)
+                )
             )
         )
 
@@ -250,15 +253,16 @@ class OrganizationModule(ModuleWithDb):
                             OrgFull(
                                 id=org.id,
                                 name=org.name,
-                                coordinates=f'{org_coords.y}, {org_coords.x}',
-                                address=f'{addr.country}, {addr.city}, {addr.street}, {addr.home}',
+                                coordinates=f"{org_coords.y}, {org_coords.x}",
+                                address=f"{addr.country}, {addr.city}, {addr.street}, {addr.home}",
                                 categories=[
                                     CategoryFull(
                                         id=cat.id,
                                         parent_id=cat.parent_id,
-                                        name=cat.name
-                                    ) for cat in org.categories
-                                ]
+                                        name=cat.name,
+                                    )
+                                    for cat in org.categories
+                                ],
                             )
                         )
                         result_ids.add(org.id)

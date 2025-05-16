@@ -1,1 +1,1 @@
-from .module import get_backend, Backend
+from .module import Backend, get_backend

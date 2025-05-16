@@ -8,14 +8,15 @@ class DatabaseSettings(BaseSettings):
     DB_USER: str = ""
     DB_PASS: str = ""
 
-    model_config = SettingsConfigDict(env_file=".env", frozen=True, env_ignore_empty=True)
+    model_config = SettingsConfigDict(
+        env_file=".env", frozen=True, env_ignore_empty=True
+    )
 
     def get_db_url(self) -> str:
-        return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-class Settings(
-    DatabaseSettings
-):
+
+class Settings(DatabaseSettings):
     pass
 
 
