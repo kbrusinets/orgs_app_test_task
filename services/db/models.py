@@ -55,3 +55,10 @@ class OrganizationCategory(Base):
 
     org_id: Mapped[int] = mapped_column(Integer, ForeignKey('organization.id'), primary_key=True)
     cat_id: Mapped[int] = mapped_column(Integer, ForeignKey('category.id'), primary_key=True)
+
+
+class ApiKey(Base):
+    __tablename__ = 'api_key'
+
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    api_key: Mapped[str] = mapped_column(String, nullable=False, unique=True)

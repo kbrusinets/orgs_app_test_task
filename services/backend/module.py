@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from services.backend.modules.auth.module import AuthModule
 from services.backend.modules.category.module import CategoryModule
 from services.backend.modules.organization.module import OrganizationModule
 from services.db import Db, get_db
@@ -9,6 +10,7 @@ class Backend:
     def __init__(self, db: Db):
         self.org_module = OrganizationModule(db=db)
         self.cat_module = CategoryModule(db=db)
+        self.auth_module = AuthModule(db=db)
 
 
 @lru_cache

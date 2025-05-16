@@ -2,7 +2,9 @@ from typing import Annotated, List, Union
 
 from fastapi import APIRouter, Depends
 
+from services.app.api.v1.authentication import check_api_key
 from services.backend import Backend, get_backend
+from services.backend.modules.auth.schemas import User
 from services.backend.modules.organization.schemas import OrgFull
 
 router = APIRouter(prefix='/org', tags=['org'])
@@ -12,6 +14,7 @@ router = APIRouter(prefix='/org', tags=['org'])
             summary='Get organizations by coords',
             response_model=List[OrgFull])
 async def get_by_coords(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         lon: float,
         lat: float
@@ -22,6 +25,7 @@ async def get_by_coords(
             summary='Get organization by id',
             response_model=Union[OrgFull, None])
 async def get_by_id(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         org_id: int
 ):
@@ -31,6 +35,7 @@ async def get_by_id(
             summary='Get organizations by category tree',
             response_model=List[OrgFull])
 async def get_by_categories(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         cat_id: int
 ):
@@ -41,6 +46,7 @@ async def get_by_categories(
             summary='Get organizations by name. "%" wildcard is supported.',
             response_model=List[OrgFull])
 async def get_by_name(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         name: str
 ):
@@ -50,6 +56,7 @@ async def get_by_name(
             summary='Get organizations inside radius',
             response_model=List[OrgFull])
 async def get_by_radius(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         lon: float,
         lat: float,
@@ -61,6 +68,7 @@ async def get_by_radius(
             summary='Get organizations inside area. The parameters are the coordinates of the center and the width and height of the area, measured in meters.',
             response_model=List[OrgFull])
 async def get_by_area(
+        user: Annotated[User, Depends(check_api_key)],
         backend: Annotated[Backend, Depends(get_backend)],
         lon: float,
         lat: float,

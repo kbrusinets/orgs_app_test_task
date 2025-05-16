@@ -62,6 +62,12 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['org_id'], ['organization.id'], ),
     sa.PrimaryKeyConstraint('number')
     )
+    op.create_table('api_key',
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('api_key', sa.String(), nullable=False),
+    sa.PrimaryKeyConstraint('user_id'),
+    sa.UniqueConstraint('api_key')
+    )
     # ### end Alembic commands ###
 
     op.execute("""
@@ -148,6 +154,13 @@ def upgrade() -> None:
         ('37-23-41', 3), 
         ('444', 4), 
         ('911', 5)
+        ON CONFLICT DO NOTHING;
+    """)
+    op.execute("""
+        INSERT INTO api_key (user_id, api_key) 
+        VALUES 
+        (1, 'cb94747ada8c7d337aada765050bda1a3b2889695168f476eebec93c06a5e1f5'),
+        (2, '65283c1868b48f0fd0f5e1a1f698cab34c4110add1c218fe0a81c2fe018d3735')
         ON CONFLICT DO NOTHING;
     """)
 
